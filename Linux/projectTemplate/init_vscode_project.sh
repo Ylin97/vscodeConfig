@@ -51,8 +51,8 @@ function Init-cpp {
 
 function Reset-c {
     local template_path="$HOME/.config/Code/projectTemplate/c"
-    # 复制所有模板文件到当前目录
-    local cmd="cp -r $template_path/. . >/dev/null 2>&1"
+    # 复制所有配置文件到当前目录
+    local cmd="cp -r $template_path/.vscode . >/dev/null 2>&1"
     if eval $cmd; then
         echo "Reset workspace's configuration for a C project seccussfully!"
     else
@@ -62,8 +62,8 @@ function Reset-c {
 
 function Reset-cpp {
     local template_path="$HOME/.config/Code/projectTemplate/cpp"
-    # 复制所有模板文件到当前目录
-    local cmd="cp -r $template_path/. . >/dev/null 2>&1"
+    # 复制所有配置文件到当前目录
+    local cmd="cp -r $template_path/.vscode . >/dev/null 2>&1"
     if eval $cmd; then
         echo "Reset workspace's configuration for a C++ project seccussfully!"
     else
