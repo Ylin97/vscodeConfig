@@ -57,6 +57,7 @@ function Reset-c {
         echo "Reset workspace's configuration for a C project seccussfully!"
     else
         echo "Error: can't reset workspace configuration, please try again!"
+    fi
 }
 
 function Reset-cpp {
