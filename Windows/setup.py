@@ -166,47 +166,49 @@ def generate_config_file():
 def set_profile():
     """ 设置 profile.ps1 文件"""
     HOME = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
-    profile_path = os.path.join(HOME, 'Documents', 'WindowsPowerShell')
+    profile_paths = [os.path.join(HOME, 'Documents', 'PowerShell'), 
+                        os.path.join(HOME, 'Documents', 'WindowsPowerShell')]
     
     with open('vscode_profile.ps1', 'r', encoding='utf-8') as fr:
-        content = fr.read()
-    destination = os.path.join(profile_path, 'profile.ps1')
-    # destination = 'profile.ps1'
-    if os.path.exists(destination):
-        with open(destination, 'r', encoding='utf-8') as fr:
-            origin_content = fr.readlines()
-            start, end = 0, 0
-            for cnt, line in enumerate(origin_content):
-                if line.strip() == '#region project initialize':
-                    start = cnt
-                if start != 0 and line.strip() == '#endregion':
-                    end = cnt + 1
-                    break
-    else:
-        origin_content = None
-    with open(destination, 'w', encoding='utf-8') as fw:
-        if not origin_content:
-            fw.write(content)
-        elif start != 0:
-            fw.writelines(origin_content[0:start])
-            if len(origin_content[start - 1].strip()) != 0:
-                if origin_content[start - 1][-1] != '\n': 
-                    fw.write('\n\n')
-                else:
-                    fw.write('\n')
-            fw.write(content)
-            if end > start and end < len(origin_content):
-                if len(origin_content[end].strip()) != 0:
-                    fw.write('\n\n')
-                else:
-                    fw.write('\n')
-                fw.writelines(origin_content[end:])
+        content = fr.read()     
+    for profile_path in profile_paths:
+        destination = os.path.join(profile_path, 'profile.ps1')
+        # destination = 'profile.ps1'
+        if os.path.exists(destination):
+            with open(destination, 'r', encoding='utf-8') as fr:
+                origin_content = fr.readlines()
+                start, end = 0, 0
+                for cnt, line in enumerate(origin_content):
+                    if line.strip() == '#region project initialize':
+                        start = cnt
+                    if start != 0 and line.strip() == '#endregion':
+                        end = cnt + 1
+                        break
         else:
-            fw.writelines(origin_content)
-            fw.write('\n')
-            if origin_content[-1][-1] != '\n':
+            origin_content = None
+        with open(destination, 'w', encoding='utf-8') as fw:
+            if not origin_content:
+                fw.write(content)
+            elif start != 0:
+                fw.writelines(origin_content[0:start])
+                if len(origin_content[start - 1].strip()) != 0:
+                    if origin_content[start - 1][-1] != '\n': 
+                        fw.write('\n\n')
+                    else:
+                        fw.write('\n')
+                fw.write(content)
+                if end > start and end < len(origin_content):
+                    if len(origin_content[end].strip()) != 0:
+                        fw.write('\n\n')
+                    else:
+                        fw.write('\n')
+                    fw.writelines(origin_content[end:])
+            else:
+                fw.writelines(origin_content)
                 fw.write('\n')
-            fw.write(content)
+                if origin_content[-1][-1] != '\n':
+                    fw.write('\n')
+                fw.write(content)
 
 
 def generate_template():
