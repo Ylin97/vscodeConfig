@@ -209,7 +209,23 @@ def set_profile():
             fw.write(content)
 
 
-def move_template():
+def generate_template():
+    """生成模板目录结构"""
+    build_path = os.path.join('.', 'projectTemplate', 'build')
+    debug_path = os.path.join('.', 'projectTemplate', 'debug')
+    include_path = os.path.join('.', 'projectTemplate', 'include')
+    if os.path.exists(build_path):
+        rmtree(build_path)
+    elif os.path.exists(debug_path):
+        rmtree(debug_path)
+    elif os.path.exists(include_path):
+        rmtree(include_path)
+    os.mkdir(build_path)
+    os.mkdir(debug_path)
+    os.mkdir(include_path)
+
+
+def copy_template():
     """移动项目模板到默认模板放置位置"""
     HOME = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
     vscode_config_path = os.path.join(HOME, '.vscode')
@@ -222,9 +238,10 @@ def move_template():
 
 
 def main():
-    generate_config_file();
-    move_template();
-    set_profile();
+    generate_config_file()
+    generate_template()
+    copy_template()
+    set_profile()
     print("配置已完成，请按任意键退出...")
     ord(msvcrt.getch())
 

@@ -42,6 +42,22 @@ def set_shell_config(fpath: str):
             fw.write(content)
 
 
+def generate_template():
+    """生成模板目录结构"""
+    build_path = os.path.join('.', 'projectTemplate', 'build')
+    debug_path = os.path.join('.', 'projectTemplate', 'debug')
+    include_path = os.path.join('.', 'projectTemplate', 'include')
+    if os.path.exists(build_path):
+        rmtree(build_path)
+    elif os.path.exists(debug_path):
+        rmtree(debug_path)
+    elif os.path.exists(include_path):
+        rmtree(include_path)
+    os.mkdir(build_path)
+    os.mkdir(debug_path)
+    os.mkdir(include_path)
+
+
 def copy_template():
     """拷贝项目模板到默认模板放置位置"""
     vscode_config_path = f'{HOME}/.config/Code'
@@ -55,6 +71,8 @@ def copy_template():
 
 if __name__ == "__main__":
     HOME = os.environ['HOME']
+    # 生成模板目录
+    generate_template()
     # 拷贝模板
     copy_template()
     # 设置shell配置文件
