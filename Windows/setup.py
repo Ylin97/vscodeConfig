@@ -120,6 +120,7 @@ def generate_config_file():
             config = launch_data
             config['configurations'][0]['name'] = "gcc.exe - 生成和调试活动文件"
             config['configurations'][0]['miDebuggerPath'] = os.path.join(compiler_path, "gdb.exe")
+            config['configurations'][0]['preLaunchTask'] = "gcc.exe - 生成和调试活动文件"
             write_file(os.path.join(c_path, f), config)
         elif f == 'tasks.json':
             config = tasks_data
@@ -146,6 +147,7 @@ def generate_config_file():
             config = launch_data
             config['configurations'][0]['name'] = "g++.exe - 生成和调试活动文件"
             config['configurations'][0]['miDebuggerPath'] = os.path.join(compiler_path, "gdb.exe")
+            config['configurations'][0]['preLaunchTask'] = "g++.exe - 生成和调试活动文件"
             write_file(os.path.join(cpp_path, f), config)
         elif f == 'tasks.json':
             config = tasks_data
