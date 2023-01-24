@@ -211,18 +211,20 @@ def set_profile():
 
 def generate_template():
     """生成模板目录结构"""
-    build_path = os.path.join('.', 'projectTemplate', 'build')
-    debug_path = os.path.join('.', 'projectTemplate', 'debug')
-    include_path = os.path.join('.', 'projectTemplate', 'include')
-    if os.path.exists(build_path):
-        rmtree(build_path)
-    elif os.path.exists(debug_path):
-        rmtree(debug_path)
-    elif os.path.exists(include_path):
-        rmtree(include_path)
-    os.mkdir(build_path)
-    os.mkdir(debug_path)
-    os.mkdir(include_path)
+    lang_list = ['c', 'cpp']
+    for lang in lang_list:
+        build_path = os.path.join('.', 'projectTemplate', lang, 'build')
+        debug_path = os.path.join('.', 'projectTemplate', lang, 'debug')
+        include_path = os.path.join('.', 'projectTemplate', lang, 'include')
+        if os.path.exists(build_path):
+            rmtree(build_path)
+        if os.path.exists(debug_path):
+            rmtree(debug_path)
+        if os.path.exists(include_path):
+            rmtree(include_path)
+        os.mkdir(build_path)
+        os.mkdir(debug_path)
+        os.mkdir(include_path)
 
 
 def copy_template():
