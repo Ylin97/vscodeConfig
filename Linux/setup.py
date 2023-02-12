@@ -135,10 +135,10 @@ def set_tasks_json(compiler_path: str, language: str):
         "-fdiagnostics-color=always",
         "-g",
         "-I",
-        "${workspaceFolder}\\include",
-        "${fileDirname}\\" + f"*.{language}",
+        "${workspaceFolder}/include",
+        "${fileDirname}/" + f"*.{language}",
         "-o",
-        "${workspaceFolder}\\debug\\main"
+        "${workspaceFolder}/debug/main"
     ]
     if language == "c":
         write_file(os.path.join(c_path, "tasks.json"), config)
@@ -318,10 +318,10 @@ if __name__ == "__main__":
                     "UNICODE",
                     "_UNICODE"
                 ],
-                "compilerPath": "D:\\Tools\\mingw64\\bin\\gcc.exe",
+                "compilerPath": "/usr/bin/gcc",
                 "cStandard": "gnu11",
                 "cppStandard": "gnu++11",
-                "intelliSenseMode": "windows-gcc-x64"
+                "intelliSenseMode": "linux-gcc-x64"
             }
         ],
         "version": 4
@@ -331,17 +331,17 @@ if __name__ == "__main__":
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "gcc.exe - 生成和调试活动文件",
+                "name": "gcc - 生成和调试活动文件",
                 "type": "cppdbg",
                 "request": "launch",
-                "program": "${workspaceFolder}\\debug\\main.exe",
+                "program": "${workspaceFolder}/debug/main",
                 "args": [],
                 "stopAtEntry": False,
                 "cwd": "${workspaceFolder}",
                 "environment": [],
                 "externalConsole": False,
                 "MIMode": "gdb",
-                "miDebuggerPath": "D:\\Tools\\mingw64\\bin\\gdb.exe",
+                "miDebuggerPath": "/usr/bin/gdb",
                 "setupCommands": [
                     {
                         "description": "为 gdb 启用整齐打印",
@@ -349,7 +349,7 @@ if __name__ == "__main__":
                         "ignoreFailures": True
                     }
                 ],
-                "preLaunchTask": "C/C++: g++.exe 生成活动文件"
+                "preLaunchTask": "C/C++: g++ 生成活动文件"
             }
         ]
     }
@@ -358,16 +358,16 @@ if __name__ == "__main__":
         "tasks": [
             {
                 "type": "cppbuild",
-                "label": "C/C++: g++.exe 生成活动文件",
-                "command": "D:\\Tools\\mingw64\\bin\\gcc.exe",
+                "label": "C/C++: g++ 生成活动文件",
+                "command": "/usr/bin/gcc",
                 "args": [
                     "-fdiagnostics-color=always",
                     "-g",
                     "-I",
-                    "${workspaceFolder}\\include",
-                    "${fileDirname}\\*.c",
+                    "${workspaceFolder}/include",
+                    "${fileDirname}/*.c",
                     "-o",
-                    "${workspaceFolder}\\debug\\main.exe"
+                    "${workspaceFolder}/debug/main"
                 ],
                 "options": {
                     "cwd": "${fileDirname}"
@@ -391,8 +391,8 @@ if __name__ == "__main__":
         "files.autoSave": "afterDelay",
         "code-runner.executorMap": {
             
-            "c": "cd $workspaceRoot && gcc -I include source\\*.c -o $workspaceRoot\\build\\main.exe",
-            "cpp": "cd $workspaceRoot && g++ -I include source\\*.cpp -o $workspaceRoot\\build\\main.exe",
+            "c": "cd $workspaceRoot && gcc -I include source/*.c -o $workspaceRoot/build/main",
+            "cpp": "cd $workspaceRoot && g++ -I include source/*.cpp -o $workspaceRoot/build/main",
         }
     }
 
