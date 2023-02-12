@@ -25,7 +25,6 @@ def get_std_version():
     }
     global default_c_std
     global default_cpp_std
-
     while True:
         print("[0] c11,  [1] c17,  [2] gnu11,  [3] gnu17")
         opt = input("请选择编译器将要使用的C标准版本(默认 c17): ").strip()
@@ -100,8 +99,8 @@ def set_c_cpp_properties_json(compiler_path: str, language: str):
     global default_c_std
     global default_cpp_std
     global c_cpp_properties_info
-    c_path = 'projectTemplate\\c\\.vscode'
-    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    global c_path
+    global cpp_path
     config = c_cpp_properties_info
     config["configurations"][0]['cStandard'] = default_c_std
     config["configurations"][0]['cppStandard'] = default_cpp_std
@@ -125,8 +124,8 @@ def set_tasks_json(compiler_path: str, language: str):
         语言类型, c, c++, ...
     """
     global tasks_info
-    c_path = 'projectTemplate\\c\\.vscode'
-    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    global c_path
+    global cpp_path
     config = tasks_info
     compiler = "gcc.exe" if language == "c" else "g++.exe"
     config['tasks'][0]['label'] = f"C/C++: {compiler} 生成活动文件"
@@ -157,8 +156,8 @@ def set_launch_json(compiler_path: str, language: str):
         语言类型, c, c++, ...
     """
     global launch_info
-    c_path = 'projectTemplate\\c\\.vscode'
-    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    global c_path
+    global cpp_path
     config = launch_info
     compiler = "gcc.exe" if language == "c" else "g++.exe"
     config['configurations'][0]['name'] = f"{compiler} - 生成和调试活动文件"
@@ -172,13 +171,13 @@ def set_launch_json(compiler_path: str, language: str):
 
 def set_settings_json():
     """设置 Code Runner 的配置参数"""    
-    c_path = 'projectTemplate\\c\\.vscode'
-    cpp_path = 'projectTemplate\\cpp\\.vscode'
     append_command = ' && $workspaceRoot\\build\\main.exe'
     warning_parameters = ' -Wall -Wpedantic -Wextra'
     global default_c_std
     global default_cpp_std
     global settings_info
+    global c_path
+    global cpp_path
 
     settings_info["code-runner.executorMap"]["c"] += f" -std={default_c_std}{warning_parameters}{append_command}"
     settings_info["code-runner.executorMap"]["cpp"] += f" -std={default_cpp_std}{warning_parameters}{append_command}"
@@ -266,6 +265,12 @@ def copy_template():
 
 def main():
     print("Visual Studio Code c/c++多文件设置:\n")
+    global c_path
+    global cpp_path
+    if not os.path.exists(c_path):
+        os.mkdir(c_path)
+    if not os.path.exists(cpp_path):
+        os.mkdir(cpp_path)
     get_std_version()
     if generate_config_file():
         generate_template()
@@ -372,5 +377,7 @@ if __name__ == '__main__':
 
     default_c_std = "c17"  # 默认c标准
     default_cpp_std = "c++11"  # 默认c++标准
+    c_path = 'projectTemplate\\c\\.vscode'
+    cpp_path = 'projectTemplate\\cpp\\.vscode'
 
     sys.exit(main())
