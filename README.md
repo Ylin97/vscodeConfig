@@ -6,15 +6,15 @@
 
 ### Step 1:  配置命令
 
-首先应该通过插件商店安装`Code Runner`插件。
+首先应该通过插件商店安装`C/C++`和`Code Runner`这两个插件。
 
 #### Windows 系统  
 
-运行 `Windows`文件夹中的`setup.py`或者`setup.exe`即可完成设置。
+运行 `Windows`文件夹中的`setup.py`或者`setup.exe`即可完成配置。
 
 #### Linux 系统
 
-在终端打开`Linux`目录，然后执行`bash ./setup.sh`即可完成配置。
+在终端打开`Linux`目录，然后执行`python ./setup.py`即可完成配置。
 
 ### Step 2: 使用命令  
 
