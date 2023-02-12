@@ -1,14 +1,9 @@
 {
-    //"workbench.iconTheme": "material-icon-theme",
-    //"workbench.colorTheme": "Atom One Light",
-    //"editor.fontSize": 20,
     "explorer.confirmDelete": false,
     "code-runner.runInTerminal": true,
     "files.autoSave": "afterDelay",
     "code-runner.executorMap": {
-        
-        "c": "cd $workspaceRoot && gcc -I include source\\*.c -o $workspaceRoot\\build\\main.exe && $workspaceRoot\\build\\main.exe",
-        "cpp": "cd $workspaceRoot && g++ -I include source\\*.cpp -o $workspaceRoot\\build\\main.exe && $workspaceRoot\\build\\main.exe",
-        // "objective-c": "cd $dir && gcc -framework Cocoa $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
+        "c": "cd $workspaceRoot && gcc -I include source\\*.c -o $workspaceRoot\\build\\main.exe -std=c17 -Wall -Wpedantic -Wextra && $workspaceRoot\\build\\main.exe",
+        "cpp": "cd $workspaceRoot && g++ -I include source\\*.cpp -o $workspaceRoot\\build\\main.exe -std=c++11 -Wall -Wpedantic -Wextra && $workspaceRoot\\build\\main.exe"
     }
 }

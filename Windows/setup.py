@@ -4,85 +4,50 @@ import json
 import msvcrt
 from shutil import copytree, rmtree
 
-c_cpp_properties_data = {
-    "configurations": [
-        {
-            "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}",
-                "${workspaceFolder}/include"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "compilerPath": "D:\\Tools\\mingw64\\bin\\gcc.exe",
-            "cStandard": "gnu11",
-            "cppStandard": "gnu++11",
-            "intelliSenseMode": "windows-gcc-x64"
-        }
-    ],
-    "version": 4
-}
 
-launch_data = {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "gcc.exe - 生成和调试活动文件",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}\\debug\\main.exe",
-            "args": [],
-            "stopAtEntry": False,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": False,
-            "MIMode": "gdb",
-            "miDebuggerPath": "D:\\Tools\\mingw64\\bin\\gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "为 gdb 启用整齐打印",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": True
-                }
-            ],
-            "preLaunchTask": "C/C++: g++.exe 生成活动文件"
-        }
-    ]
-}
+def get_std_version():
+    """获取用户指定的语言标准版本"""
+    c_stds = {
+        "0": "c11",
+        "1": "c17",
+        "2": "gnu11",
+        "3": "gnu17"
+    }
+    cpp_stds = {
+        "0": "c++11",
+        "1": "c++14",
+        "2": "c++17",
+        "3": "c++20",
+        "4": "gnu++11",
+        "5": "gnu++14",
+        "6": "gnu++17",
+        "7": "gnu++20"
+    }
+    global default_c_std
+    global default_cpp_std
 
-tasks_data = {
-    "tasks": [
-        {
-            "type": "cppbuild",
-            "label": "C/C++: g++.exe 生成活动文件",
-            "command": "D:\\Tools\\mingw64\\bin\\gcc.exe",
-            "args": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "-I",
-                "${workspaceFolder}\\include",
-                "${fileDirname}\\*.c",
-                "-o",
-                "${workspaceFolder}\\debug\\main.exe"
-            ],
-            "options": {
-                "cwd": "${fileDirname}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": True
-            },
-            "detail": "调试器生成的任务。"
-        }
-    ],
-    "version": "2.0.0"
-}
+    while True:
+        print("[0] c11,  [1] c17,  [2] gnu11,  [3] gnu17")
+        opt = input("请选择编译器将要使用的C标准版本(默认 c17): ").strip()
+        if len(opt) == 0:
+            break
+        elif opt not in "0123":
+            print("错误!!!请输入0或1或2...")
+            continue
+        default_c_std = c_stds[opt]
+        break
+    print("")
+    while True:
+        print("[0] c++11,   [1] c++14,    [2] c++17,    [3] c++20,")
+        print("[4] gnu++11, [5] gnu++14,  [6] gnu++17,  [7] gnu++20,")
+        opt = input("请选择编译器将要使用的C++标准版本(默认 c++11): ").strip()
+        if len(opt) == 0:
+            break
+        elif opt not in "01234567":
+            print("错误!!!请输入0或1或2...")
+            continue
+        default_cpp_std = cpp_stds[opt]
+        break
 
 
 def read_file(path: str) -> dict:
@@ -96,7 +61,7 @@ def write_file(path: str, content: dict) -> None:
         json.dump(content, fw, ensure_ascii=False, indent=4)
 
 
-def generate_config_file():
+def generate_config_file() -> bool:
     Path = os.getenv('Path').split(';')
     compiler_path = None
     for p in Path:
@@ -106,63 +71,119 @@ def generate_config_file():
                 break
         except Exception:
             continue
+    if not compiler_path:
+        print("警告!!!未找到GCC编译器, 请确保您已经安装GCC编译器, 并已将其添加到'Path'环境变量中!")
+        return False
+
+    set_settings_json()
+    # set c config files
+    set_c_cpp_properties_json(compiler_path, 'c')
+    set_tasks_json(compiler_path, 'c')
+    set_launch_json(compiler_path, 'c')
+    # set cpp config files
+    set_c_cpp_properties_json(compiler_path, 'cpp')
+    set_tasks_json(compiler_path, 'cpp')
+    set_launch_json(compiler_path, 'cpp')
+    return True
+
+
+def set_c_cpp_properties_json(compiler_path: str, language: str):
+    """设置c_cpp_properties.json
+    Parameter
+    ------
+
+    `compiler_path`: str
+        编译器路径
+    `language`: str
+        语言类型, c, c++, ...
+    """
+    global default_c_std
+    global default_cpp_std
+    global c_cpp_properties_info
     c_path = 'projectTemplate\\c\\.vscode'
     cpp_path = 'projectTemplate\\cpp\\.vscode'
-    config_files = ('c_cpp_properties.json', 'launch.json', 'tasks.json')
+    config = c_cpp_properties_info
+    config["configurations"][0]['cStandard'] = default_c_std
+    config["configurations"][0]['cppStandard'] = default_cpp_std
 
-    # set c config files
-    for f in config_files:
-        if f == 'c_cpp_properties.json':
-            config = c_cpp_properties_data
-            config['configurations'][0]['compilerPath'] = os.path.join(compiler_path, "gcc.exe")
-            write_file(os.path.join(c_path, f), config)
-        elif f == 'launch.json':
-            config = launch_data
-            config['configurations'][0]['name'] = "gcc.exe - 生成和调试活动文件"
-            config['configurations'][0]['miDebuggerPath'] = os.path.join(compiler_path, "gdb.exe")
-            config['configurations'][0]['preLaunchTask'] = "C/C++: gcc.exe 生成活动文件"
-            write_file(os.path.join(c_path, f), config)
-        elif f == 'tasks.json':
-            config = tasks_data
-            config['tasks'][0]['label'] = "C/C++: gcc.exe 生成活动文件"
-            config['tasks'][0]['command'] = os.path.join(compiler_path, "gcc.exe")
-            config['tasks'][0]['args'] = [
-                "-fdiagnostics-color=always",
-                "-g",
-                "-I",
-                "${workspaceFolder}\\include",
-                "${fileDirname}\\*.c",
-                "-o",
-                "${workspaceFolder}\\debug\\main.exe"
-            ]
-            write_file(os.path.join(c_path, f), config)
+    if language == "c":
+        config['configurations'][0]['compilerPath'] = os.path.join(compiler_path, "gcc.exe")
+        write_file(os.path.join(c_path, 'c_cpp_properties.json'), config)
+    elif language == "cpp":
+        config['configurations'][0]['compilerPath'] = os.path.join(compiler_path, "g++.exe")
+        write_file(os.path.join(cpp_path, 'c_cpp_properties.json'), config)
 
-    # set cpp config files
-    for f in config_files:
-        if f == 'c_cpp_properties.json':
-            config = c_cpp_properties_data
-            config['configurations'][0]['compilerPath'] = os.path.join(compiler_path, "g++.exe")
-            write_file(os.path.join(cpp_path, f), config)
-        elif f == 'launch.json':
-            config = launch_data
-            config['configurations'][0]['name'] = "g++.exe - 生成和调试活动文件"
-            config['configurations'][0]['miDebuggerPath'] = os.path.join(compiler_path, "gdb.exe")
-            config['configurations'][0]['preLaunchTask'] = "C/C++: g++.exe 生成活动文件"
-            write_file(os.path.join(cpp_path, f), config)
-        elif f == 'tasks.json':
-            config = tasks_data
-            config['tasks'][0]['label'] = "C/C++: g++.exe 生成活动文件"
-            config['tasks'][0]['command'] = os.path.join(compiler_path, "g++.exe")
-            config['tasks'][0]['args'] = [
-                "-fdiagnostics-color=always",
-                "-g",
-                "-I",
-                "${workspaceFolder}\\include",
-                "${fileDirname}\\*.cpp",
-                "-o",
-                "${workspaceFolder}\\debug\\main.exe"
-            ]
-            write_file(os.path.join(cpp_path, f), config)
+
+def set_tasks_json(compiler_path: str, language: str):
+    """设置tasks.json
+    Parameter
+    ------
+
+    `compiler_path`: str
+        编译器路径
+    `language`: str
+        语言类型, c, c++, ...
+    """
+    global tasks_info
+    c_path = 'projectTemplate\\c\\.vscode'
+    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    config = tasks_info
+    compiler = "gcc.exe" if language == "c" else "g++.exe"
+    config['tasks'][0]['label'] = f"C/C++: {compiler} 生成活动文件"
+    config['tasks'][0]['command'] = os.path.join(compiler_path, compiler)
+    config['tasks'][0]['args'] = [
+        "-fdiagnostics-color=always",
+        "-g",
+        "-I",
+        "${workspaceFolder}\\include",
+        "${fileDirname}\\" + f"*.{language}",
+        "-o",
+        "${workspaceFolder}\\debug\\main.exe"
+    ]
+    if language == "c":
+        write_file(os.path.join(c_path, "tasks.json"), config)
+    elif language == "cpp":
+        write_file(os.path.join(cpp_path, "tasks.json"), config)
+
+
+def set_launch_json(compiler_path: str, language: str):
+    """设置launch.json
+    Parameter
+    ------
+
+    `compiler_path`: str
+        编译器路径
+    `language`: str
+        语言类型, c, c++, ...
+    """
+    global launch_info
+    c_path = 'projectTemplate\\c\\.vscode'
+    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    config = launch_info
+    compiler = "gcc.exe" if language == "c" else "g++.exe"
+    config['configurations'][0]['name'] = f"{compiler} - 生成和调试活动文件"
+    config['configurations'][0]['miDebuggerPath'] = os.path.join(compiler_path, "gdb.exe")
+    config['configurations'][0]['preLaunchTask'] = f"C/C++: {compiler} 生成活动文件"
+    if language == "c":
+        write_file(os.path.join(c_path, "launch.json"), config)
+    elif language == "cpp":
+        write_file(os.path.join(cpp_path, "launch.json"), config)
+
+
+def set_settings_json():
+    """设置 Code Runner 的配置参数"""    
+    c_path = 'projectTemplate\\c\\.vscode'
+    cpp_path = 'projectTemplate\\cpp\\.vscode'
+    append_command = ' && $workspaceRoot\\build\\main.exe'
+    warning_parameters = ' -Wall -Wpedantic -Wextra'
+    global default_c_std
+    global default_cpp_std
+    global settings_info
+
+    settings_info["code-runner.executorMap"]["c"] += f" -std={default_c_std}{warning_parameters}{append_command}"
+    settings_info["code-runner.executorMap"]["cpp"] += f" -std={default_cpp_std}{warning_parameters}{append_command}"
+    write_file(os.path.join(c_path, 'settings.json'), settings_info)
+    write_file(os.path.join(cpp_path, 'settings.json'), settings_info)
 
 
 def set_profile():
@@ -244,13 +265,112 @@ def copy_template():
 
 
 def main():
-    generate_config_file()
-    generate_template()
-    copy_template()
-    set_profile()
-    print("配置已完成，请按任意键退出...")
+    print("Visual Studio Code c/c++多文件设置:\n")
+    get_std_version()
+    if generate_config_file():
+        generate_template()
+        copy_template()
+        set_profile()
+        print("配置已完成, 请按任意键退出...")
+    else:
+        print("\n配置未完成, 请按任意键退出...")
+
     ord(msvcrt.getch())
 
 
 if __name__ == '__main__':
+    c_cpp_properties_info = {
+        "configurations": [
+            {
+                "name": "Win32",
+                "includePath": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/include"
+                ],
+                "defines": [
+                    "_DEBUG",
+                    "UNICODE",
+                    "_UNICODE"
+                ],
+                "compilerPath": "D:\\Tools\\mingw64\\bin\\gcc.exe",
+                "cStandard": "gnu11",
+                "cppStandard": "gnu++11",
+                "intelliSenseMode": "windows-gcc-x64"
+            }
+        ],
+        "version": 4
+    }
+
+    launch_info = {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "gcc.exe - 生成和调试活动文件",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}\\debug\\main.exe",
+                "args": [],
+                "stopAtEntry": False,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "externalConsole": False,
+                "MIMode": "gdb",
+                "miDebuggerPath": "D:\\Tools\\mingw64\\bin\\gdb.exe",
+                "setupCommands": [
+                    {
+                        "description": "为 gdb 启用整齐打印",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": True
+                    }
+                ],
+                "preLaunchTask": "C/C++: g++.exe 生成活动文件"
+            }
+        ]
+    }
+
+    tasks_info = {
+        "tasks": [
+            {
+                "type": "cppbuild",
+                "label": "C/C++: g++.exe 生成活动文件",
+                "command": "D:\\Tools\\mingw64\\bin\\gcc.exe",
+                "args": [
+                    "-fdiagnostics-color=always",
+                    "-g",
+                    "-I",
+                    "${workspaceFolder}\\include",
+                    "${fileDirname}\\*.c",
+                    "-o",
+                    "${workspaceFolder}\\debug\\main.exe"
+                ],
+                "options": {
+                    "cwd": "${fileDirname}"
+                },
+                "problemMatcher": [
+                    "$gcc"
+                ],
+                "group": {
+                    "kind": "build",
+                    "isDefault": True
+                },
+                "detail": "调试器生成的任务。"
+            }
+        ],
+        "version": "2.0.0"
+    }
+
+    settings_info = {
+        "explorer.confirmDelete": False,
+        "code-runner.runInTerminal": True,
+        "files.autoSave": "afterDelay",
+        "code-runner.executorMap": {
+            
+            "c": "cd $workspaceRoot && gcc -I include source\\*.c -o $workspaceRoot\\build\\main.exe",
+            "cpp": "cd $workspaceRoot && g++ -I include source\\*.cpp -o $workspaceRoot\\build\\main.exe",
+        }
+    }
+
+    default_c_std = "c17"  # 默认c标准
+    default_cpp_std = "c++11"  # 默认c++标准
+
     sys.exit(main())
