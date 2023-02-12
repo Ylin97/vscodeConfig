@@ -281,6 +281,10 @@ def press_any_key_exit(msg):
 
 def main():
     print("Visual Studio Code c/c++多文件设置:\n")
+    if not os.path.exists(c_path):
+        os.mkdir(c_path)
+    if not os.path.exists(cpp_path):
+        os.mkdir(cpp_path)
     get_std_version()
     if generate_config_file():
         generate_template()
