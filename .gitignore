@@ -2,3 +2,4 @@ Linux/projectTemplate/c/.vscode
 Linux/projectTemplate/cpp/.vscode
 Windows/projectTemplate/c/.vscode
 Windows/projectTemplate/cpp/.vscode
+*/**/*.exe
