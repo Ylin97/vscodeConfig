@@ -207,6 +207,7 @@ def set_profile():
                         end = cnt + 1
                         break
         else:
+            os.makedirs(profile_path)
             origin_content = None
         with open(destination, 'w', encoding='utf-8') as fw:
             if not origin_content:
