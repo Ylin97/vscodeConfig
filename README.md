@@ -10,7 +10,7 @@
 
 #### Windows 系统  
 
-运行 `Windows`文件夹中的`setup.py`或者`setup.exe`即可完成配置。
+在终端打开`Windows`目录，然后执行`python ./setup.py`或者运行下载的`setup_win.exe`即可完成配置。
 
 #### Linux 系统
 
