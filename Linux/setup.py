@@ -186,22 +186,27 @@ def set_settings_json():
     write_file(os.path.join(cpp_path, 'settings.json'), settings_info)
 
 
-def set_shell_config(fpath: str):
+def set_shell_config(fpath: str, shell: str="sh"):
     """设置shell配置文件"""
     with open(fpath, 'r', encoding='utf-8') as fr:
         origin_content = fr.readlines()
         start, end = 0, 0
         if origin_content:
             for cnt, line in enumerate(origin_content):
-                if line.strip() == '#region project initialize':
+                if line.strip() == '##{{{ C/C++ project initialize':
                     start = cnt
-                if start != 0 and line.strip() == '#endregion':
+                if start != 0 and line.strip() == '##}}} End C/C++ project initialize':
                     end = cnt + 1
                     break
     global HOME
-    content = '#region project initialize\n' \
-            + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.sh\n' \
-            + '#endregion'
+    if shell == "sh":
+        content = '##{{{ C/C++ project initialize\n' \
+                + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.sh\n' \
+                + '##}}} End C/C++ project initialize'
+    elif shell == "fish":
+        content = '##{{{ C/C++ project initialize\n' \
+            + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.fish\n' \
+            + '##}}} End C/C++ project initialize'
     with open(fpath, 'w', encoding='utf-8') as fw:
         if not origin_content:
             fw.write(content)
@@ -292,6 +297,7 @@ def main():
         global HOME
         bashrc_path = os.path.join(HOME, '.bashrc')
         zshrc_path = os.path.join(HOME, '.zshrc')
+        fishconfig_path = os.path.join(HOME, '.config/fish/config.fish')
         if not os.path.exists(bashrc_path):
             fw = open(bashrc_path, 'w', encoding='utf-8')
             fw.close()
@@ -299,6 +305,9 @@ def main():
 
         if os.path.exists(zshrc_path):
             set_shell_config(zshrc_path)
+
+        if os.path.exists(fishconfig_path):
+            set_shell_config(fishconfig_path, "fish")
         press_any_key_exit("配置已完成, 请按任意键退出...")
     else:
         press_any_key_exit("\n配置未完成, 请按任意键退出...")

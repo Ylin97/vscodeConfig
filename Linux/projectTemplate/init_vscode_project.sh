@@ -1,7 +1,7 @@
 ## 初始化 vscode 项目
 function Init-c {
     local template_path="$HOME/.config/Code/projectTemplate/c"
-    # 复制所有模板文件到当前目录
+    # 复制所有模板文件到当前目录，cp命令中的'.'表示不忽略以'.'开头的隐藏文件
     local cmd="cp -r $template_path/. . >/dev/null 2>&1"
     if eval $cmd; then
         # 检查 git 命令是否存在，如果存在则初始化一个仓库
