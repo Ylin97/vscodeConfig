@@ -92,15 +92,16 @@ function Reset-cpp
 }
 #endregion
 
+
 #region ModernCpp
 function New-CppProject {
     <#
       初始化 CMake + Ninja + vcpkg + VS Code 项目
-      默认模板：$env:USERPROFILE\.vscode\template\ModernCpp
+      默认模板：$env:USERPROFILE\.vscode\projectTemplate\ModernCpp
     #>
 
     param(
-        [string]$TemplatePath = "$env:USERPROFILE\.vscode\template\ModernCpp",
+        [string]$TemplatePath = "$env:USERPROFILE\.vscode\projectTemplate\ModernCpp",
         [string]$ProjectNameRaw = (Split-Path -Leaf (Get-Location))
     )
 
@@ -130,7 +131,7 @@ function New-CppProject {
 
     #──────────────── 3. 占位符替换 & 文件重命名 ──
     # 1) 替换文件内容中的 example → 项目名
-    Get-ChildItem -Recurse -File -Include *.cpp,*.h,*.txt,*.cmake,CMakeLists.txt,vcpkg.json |
+    Get-ChildItem -Recurse -File -Include *.cpp,*.h,*.txt,*.cmake,CMakeLists.txt,vcpkg.json,launch.json,tasks.json |
         ForEach-Object {
             (Get-Content $_.FullName) -replace '\bexample\b', $ProjectName |
                 Set-Content $_.FullName
