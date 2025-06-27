@@ -90,22 +90,65 @@ function Reset-cpp
 {
     Reset-Vscode-Config 'cpp'
 }
-#endregion
-
-
-#region ModernCpp
+ 
 function New-CppProject {
     <#
-      初始化 CMake + Ninja + vcpkg + VS Code 项目
-      默认模板：$env:USERPROFILE\.vscode\projectTemplate\ModernCpp
+    .SYNOPSIS
+    初始化一个基于 CMake + Ninja + vcpkg + VS Code 的现代 C++ 项目。
+
+    .DESCRIPTION
+    本函数用于在当前目录中快速创建一个现代 C++ 项目。它将从指定模板目录复制文件，
+    替换 placeholder（如 example），初始化 Git 仓库，并生成 vcpkg 的 manifest 文件。
+
+    默认行为：
+    - 项目名默认为当前文件夹名称（规范化后用于 vcpkg）
+    - 模板路径默认为 $env:USERPROFILE\.vscode\projectTemplate\ModernCpp
+
+    .PARAMETER name
+    指定项目名称。该名称将用于替换模板中的所有 `example` 占位符，并作为 vcpkg 包名称。
+    若未指定，则默认使用当前目录名。
+
+    .PARAMETER template
+    指定项目模板路径。该路径下应包含一个标准的项目模板结构。
+    若未指定，则默认使用 `$env:USERPROFILE\.vscode\projectTemplate\ModernCpp`。
+
+    .EXAMPLE
+    PS> New-CppProject
+
+    初始化一个 C++ 项目，使用当前文件夹名作为项目名，使用默认模板路径。
+
+    .EXAMPLE
+    PS> New-CppProject -name MyApp
+
+    初始化一个名为 MyApp 的 C++ 项目，使用默认模板路径。
+
+    .EXAMPLE
+    PS> New-CppProject -name EngineCore -template "D:\Templates\ModernCpp"
+
+    使用指定模板路径初始化一个名为 EngineCore 的项目。
+
+    .NOTES
+    模板文件夹应包含至少以下文件（可通过示例模板生成）：
+    - CMakeLists.txt
+    - vcpkg.json
+    - src/include/example.h
+    - src/source/main.cpp 等
+
+    替换逻辑会将所有 `example` 替换为指定项目名，大小写敏感。
     #>
 
     param(
-        [string]$TemplatePath = "$env:USERPROFILE\.vscode\projectTemplate\ModernCpp",
-        [string]$ProjectNameRaw = (Split-Path -Leaf (Get-Location))
+        [Parameter(Position = 0, HelpMessage = "指定项目名（默认使用当前文件夹名）")]
+        [string]$name = $(Split-Path -Leaf (Get-Location)),
+
+        [Parameter(Position = 1, HelpMessage = "指定模板路径（默认：env:USERPROFILE\.vscode\projectTemplate\ModernCpp）")]
+        [string]$template = "$env:USERPROFILE\.vscode\projectTemplate\ModernCpp"
     )
 
     #──────────────── 0. 规范化项目名 ────────────────
+    $ProjectNameRaw = $name
+    $TemplatePath   = $template
+    
     $ProjectName = $ProjectNameRaw.ToLower() -replace '[ _]', '-' -replace '[^a-z0-9\-]', ''
     if ($ProjectName -ne $ProjectNameRaw) {
         Write-Host "⚠️ 项目名 [$ProjectNameRaw] 已规范化为 [$ProjectName] 以符合 vcpkg 要求。" -ForegroundColor DarkYellow
