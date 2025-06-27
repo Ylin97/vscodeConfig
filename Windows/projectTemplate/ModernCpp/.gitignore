@@ -7,7 +7,7 @@
 /buildtrees/
 
 # VS Code
-.vscode/
+#.vscode/
 
 # Misc
 *.user

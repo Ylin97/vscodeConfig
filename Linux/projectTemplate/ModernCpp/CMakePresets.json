@@ -1,0 +1,98 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC + Ninja (base)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "VCPKG_MANIFEST_MODE": "ON"
+      }
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux Clang + Ninja (base)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/clang",
+        "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "VCPKG_MANIFEST_MODE": "ON"
+      }
+    },
+
+    {
+      "name": "linux-gcc-debug",
+      "inherits": "linux-gcc",
+      "displayName": "Linux GCC Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-gcc-release",
+      "inherits": "linux-gcc",
+      "displayName": "Linux GCC Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-gcc-minsizerel",
+      "inherits": "linux-gcc",
+      "displayName": "Linux GCC MinSizeRel",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    },
+
+    {
+      "name": "linux-clang-debug",
+      "inherits": "linux-clang",
+      "displayName": "Linux Clang Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-clang-release",
+      "inherits": "linux-clang",
+      "displayName": "Linux Clang Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-clang-minsizerel",
+      "inherits": "linux-clang",
+      "displayName": "Linux Clang MinSizeRel",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "build-linux-gcc-debug",        "configurePreset": "linux-gcc-debug" },
+    { "name": "build-linux-gcc-release",      "configurePreset": "linux-gcc-release" },
+    { "name": "build-linux-gcc-minsizerel",   "configurePreset": "linux-gcc-minsizerel" },
+
+    { "name": "build-linux-clang-debug",      "configurePreset": "linux-clang-debug" },
+    { "name": "build-linux-clang-release",    "configurePreset": "linux-clang-release" },
+    { "name": "build-linux-clang-minsizerel", "configurePreset": "linux-clang-minsizerel" }
+  ]
+}

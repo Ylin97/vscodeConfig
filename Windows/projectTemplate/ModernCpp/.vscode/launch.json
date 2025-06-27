@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // MSVC 原生调试器，无需配置 GDB/MI
+      "name": "Debug with MSVC",
+      "type": "cppvsdbg",
+      "request": "launch",
+      // CMake Tools 会解析为当前 launch target 的输出全路径
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      // 把工作目录设置为可执行文件所在目录，方便 DLL 加载等
+      "cwd": "${command:cmake.getLaunchTargetDirectory}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "${env:PATH};${command:cmake.getLaunchTargetDirectory}"
+        }
+      ],
+      // 使用 VSCode 的集成终端
+      "console": "integratedTerminal",
+      // 若你希望使用外部终端，可以改为:
+      // "console": "externalTerminal",
+      "preLaunchTask": "build-msvc-debug"
+    },
+    {
+      // GDB (MinGW-w64 / MSYS2 UCRT64) 使用 MI 协议，需要指定调试器
+      "name": "Debug with GDB",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${command:cmake.getLaunchTargetDirectory}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+        }
+      ],
+      "externalConsole": false, // 使用系统终端可避免字符集或输入问题
+      "MIMode": "gdb", // 指定 MI 模式为 gdb
+      "miDebuggerPath": "D:/msys64/ucrt64/bin/gdb.exe", // GDB 可执行路径
+      "setupCommands": [ // GDB 启动时的初始化命令
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ], 
+      "preLaunchTask": "build-ucrt64-debug"
+    }
+  ]
+}

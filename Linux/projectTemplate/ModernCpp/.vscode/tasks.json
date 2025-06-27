@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-linux-gcc-debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build/linux-gcc-debug",
+        "--target",
+        "example"  // 根据你的实际可执行名修改
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "build-linux-clang-debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build/linux-clang-debug",
+        "--target",
+        "example"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}

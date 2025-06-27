@@ -1,0 +1,14 @@
+# Build artefacts
+/build/
+/target/
+
+# vcpkg buildtree / installed
+/vcpkg_installed/
+/buildtrees/
+
+# VS Code
+#.vscode/
+
+# Misc
+*.user
+*.log
