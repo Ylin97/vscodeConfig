@@ -127,6 +127,8 @@ python setup.py
 new-cpp-project
 ```
 
+> **注意**：如果使用 MSVC 构建工具，则需要通过开始菜单中的 `Developer PowerShell for VS 2022`、`Developer Command Prompt for VS 2022` 或 ` x64_x86 Cross Tools Command Prompt for VS 2022` 等启动项来启动控制台，然后再在控制台中通过命令`code <项目目录>`来打开项目，否则 vscode 可能无法正确识别 MSVC 开发所需的环境变量。
+
 初始化后，项目结构如下：
 
 ```
