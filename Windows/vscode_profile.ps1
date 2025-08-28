@@ -91,7 +91,7 @@ function Reset-cpp
     Reset-Vscode-Config 'cpp'
 }
  
-function New-CppProject {
+function New-Cpp-Project {
     <#
     .SYNOPSIS
     初始化一个基于 CMake + Ninja + vcpkg + VS Code 的现代 C++ 项目。
@@ -113,17 +113,17 @@ function New-CppProject {
     若未指定，则默认使用 `$env:USERPROFILE\.vscode\projectTemplate\ModernCpp`。
 
     .EXAMPLE
-    PS> New-CppProject
+    PS> New-Cpp-Project
 
     初始化一个 C++ 项目，使用当前文件夹名作为项目名，使用默认模板路径。
 
     .EXAMPLE
-    PS> New-CppProject -name MyApp
+    PS> New-Cpp-Project -name MyApp
 
     初始化一个名为 MyApp 的 C++ 项目，使用默认模板路径。
 
     .EXAMPLE
-    PS> New-CppProject -name EngineCore -template "D:\Templates\ModernCpp"
+    PS> New-Cpp-Project -name EngineCore -template "D:\Templates\ModernCpp"
 
     使用指定模板路径初始化一个名为 EngineCore 的项目。
 
