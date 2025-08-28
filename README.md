@@ -1,49 +1,169 @@
-## 描述  
+# VSCode C/C++ 开发模板
 
-一些 vscode 的编译和调试配置文件。通过这些配置文件可以进行多文件编译，而不依赖于`Cmake`等工具。
+一个为 **Visual Studio Code** 打造的 **C/C++ 开发模板项目**，包含编译和调试配置，支持以下两种工作模式：
 
-## 用法 
+- **✅ Code Runner 模式**：基于 `C/C++` 插件和 `Code Runner` 插件，适用于**单文件**或**简单多文件**项目。
+- **✅ 现代 C++ 模式**：基于 `C/C++` 插件和 `CMake Tools` 插件，适用于**工程化开发**，支持 CMake 构建、第三方库管理（vcpkg）、多平台编译。
 
-### Step 1:  配置命令
+------
 
-首先应该通过插件商店安装`C/C++`和`Code Runner`这两个插件。
+## 📌 功能亮点
 
-#### Windows 系统  
+- 自动生成 **标准 C/C++ 项目结构**。
+- 支持 **GCC / MSVC / Clang** 工具链。
+- 集成 **CMake + Ninja + vcpkg**，现代 C++ 项目管理最佳实践。
+- 兼容 **Windows** 和 **Linux** 平台。
+- 一键初始化项目，支持 `Init-c` / `Init-cpp` / `new-cpp-project` 命令。
 
-在终端打开`Windows`目录，然后执行`python ./setup.py`或者运行下载的`setup_win.exe`即可完成配置。
+------
 
-#### Linux 系统
+## 🚀 快速开始
 
-在终端打开`Linux`目录，然后执行`python ./setup.py`即可完成配置。
+### 模式一：Code Runner 模式（轻量级）
 
-### Step 2: 使用命令  
+#### Step 1. 安装插件
 
-用 vscode 打开一个新文件夹，然后在终端使用如下命令来初始化或重置一个项目：  
+通过 VSCode 插件市场安装：
 
-|命令|功能|
-|:----------:|:-------------------------------|
-|`Init-c`     | 初始化一个 C 项目      |
-|`Init-cpp`   | 初始化一个 C++ 项目|
-|`Reset-c`    | 重置一个 C 项目      |
-|`Reset-cpp`  | 重置一个 C++ 项目|
+- `C/C++`
+- `Code Runner`
 
-使用`Init-c`或`Init-cpp`命令后，vscode的当前工作区会生成以下几个子文件夹：  
+#### Step 2. 配置环境
 
-- build : 这里存放编译得到的可执行文件（不带调试信息）
-- debug : 这里存放编译得到的可调试的可执行文件（带有调试信息）
-- include : 这里是自定义的头文件的存放位置
-- source : 这里是`.c`文件或者`.cpp`文件的存放位置
-- .gitignore : 这是 Git 的配置文件
+**Windows**
 
-当我们对一个文件夹初始化 (`Init-c`或`Init-cpp`)后，之后就可以像编译和调试单文件一样点击 vscode 右上角的运行或调试按钮对多文件进行运行或调试了。此外，诸如`F5 调试`等快捷键也是支持的。
+```bash
+cd Windows
+python setup.py
+# 或运行预编译的 setup_win.exe
+```
 
-> **注意！**Windows 由于是通过 Powershell 脚本来实现命令的，所以首次运行时可能出现“脚本权限不允许”的报错。这时候需要更改一下系统的脚本执行控制权限：
->
-> 以管理员身份打开 Powershell，然后执行如下命令:
->
-> ```Power
-> Set-ExecutionPolicy RemoteSigned
-> ```
->
-> 然后在出现的确认信息中输入 `y` 以确定修改。更多信息请查阅 [Set-ExecutionPolicy](https://learn.microsoft.com/zh-cn/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.3)。
+**Linux**
+
+```bash
+cd Linux
+python setup.py
+```
+
+#### Step 3. 初始化项目
+
+在 VSCode 终端（`Ctrl + J`）执行：
+
+| 命令        | 功能                |
+| ----------- | ------------------- |
+| `Init-c`    | 初始化 **C 项目**   |
+| `Init-cpp`  | 初始化 **C++ 项目** |
+| `Reset-c`   | 重置 **C 项目**     |
+| `Reset-cpp` | 重置 **C++ 项目**   |
+
+初始化后，项目结构如下：
+
+```
+.
+├── .gitignore       # Git 忽略文件
+├── .vscode/         # VSCode 配置文件
+├── build/           # Release 构建产物（无调试信息）
+├── debug/           # Debug 构建产物（含调试信息）
+├── include/         # 自定义头文件
+└── source/          # 源文件 (.c / .cpp)
+```
+
+> **Tip**：初始化完成后，可以像单文件一样直接使用 **运行/调试按钮** 或 `F5` 进行多文件调试。
+
+------
+
+### 模式二：现代 C++ 模式（工程化）
+
+#### Step 1. 安装插件
+
+- `C/C++`
+- `CMake Tools`
+
+#### Step 2. 安装工具链
+
+**Windows**
+
+- `gcc`, `g++`, `gdb`, `cmake`, `ninja`（推荐通过 [MSYS2](https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/msys2-x86_64-latest.exe) 安装）
+- `Microsoft Visual C++ Build Tools`（下载地址：[Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)） 或安装完整的 **Visual Studio C++ 桌面开发**
+- `vcpkg`（[GitHub 项目地址](https://github.com/microsoft/vcpkg)）
+
+**Linux**
+
+- `gcc`, `g++`, `gdb`, `cmake`, `ninja`（通过包管理器安装）
+- `vcpkg`（同上）
+
+#### Step 3. 配置 CMakePresets.json
+
+根据工具链修改以下路径：
+
+```jsonc
+{
+  "configurePresets": [
+    {
+      "name": "msvc-vs",
+      "cacheVariables": {
+        "CMAKE_MAKE_PROGRAM": "你的Ninja路径/ninja.exe",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "ucrt64",
+      "cacheVariables": {
+        "CMAKE_MAKE_PROGRAM": "MSYS2 Ninja路径/ninja.exe",
+        "CMAKE_C_COMPILER": "MSYS2 gcc路径/gcc.exe",
+        "CMAKE_CXX_COMPILER": "MSYS2 g++路径/g++.exe",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    }
+  ]
+}
+```
+
+> **注意**：如果使用 `VCPKG_ROOT` 环境变量，请确保手动将 `vcpkg` 安装目录添加到系统环境变量，否则请直接写绝对路径。
+
+#### Step 4. 初始化项目
+
+```bash
+new-cpp-project
+```
+
+初始化后，项目结构如下：
+
+```
+.
+├── .clang-format             # Clang 格式化配置
+├── .gitignore                # Git 忽略文件
+├── .vscode/                  # VSCode 配置
+├── CMakeLists.txt            # 顶层 CMake 配置
+├── CMakePresets.json         # CMake 预设
+├── README.md                 # 项目说明
+├── external/                 # 第三方库目录
+├── src/                      # 源文件目录
+├── vcpkg-configuration.json  # vcpkg 配置
+└── vcpkg.json                # vcpkg 包清单
+```
+
+当第一次执行构建项目后会产生两个新的目录：
+
+- `build`：CMake 构建信息缓存目录以及 vcpkg 包缓存目录
+- `target`：这里面包含两个子目录`lib`和`bin`，前者是存放生成的静态库，后者存放可执行文件及其所需的库文件。
+
+#### Step 5. 引入第三方库
+
+```bash
+vcpkg add port <包名>
+```
+
+------
+
+## ⚠️ Windows PowerShell 权限问题
+
+首次运行 PowerShell 脚本可能提示**执行策略限制**，解决方法：
+ 以管理员身份运行 PowerShell，执行：
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+输入 `Y` 确认。详细参考：[Set-ExecutionPolicy 官方文档](https://learn.microsoft.com/zh-cn/powershell/module/microsoft.powershell.security/set-executionpolicy)。
 
