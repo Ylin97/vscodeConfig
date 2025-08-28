@@ -3,6 +3,7 @@ import re
 import shutil
 from pathlib import Path
 
+
 SUPPORTED_DISTROS = {
     "arch": "sudo pacman -S --needed --noconfirm",
     "ubuntu": "sudo apt install -y",
@@ -54,12 +55,144 @@ set -gx VCPKG_ROOT \"{vcpkg_root}\"
 # <<< modern cpp initialize <<<
 """
 
-
 SHELL_CONFIGS = {
     "bash": ("~/.bashrc", BASH_INSERT_TEMPLATE),
     "zsh": ("~/.zshrc", ZSH_INSERT_TEMPLATE),
     "fish": ("~/.config/fish/config.fish", FISH_INSERT_TEMPLATE)
 }
+
+NEW_CPP_PROJECT_CMD = """#!/usr/bin/env bash
+
+#────────────────────────────
+# 初始化 CMake + vcpkg + VSCode 项目（Linux版）
+# 默认模板：$HOME/.config/Code/projectTemplate/ModernCpp
+#────────────────────────────
+
+set -e
+
+# 默认值
+PROJECT_NAME_RAW=$(basename "$PWD")
+TEMPLATE_PATH="$HOME/.config/Code/projectTemplate/ModernCpp"
+
+# 显示帮助信息
+show_help() {
+    cat <<EOF
+用法: new-cpp-project [选项]
+
+选项:
+  -n, --name <项目名>       指定项目名称（默认使用当前目录名）
+  -t, --template <路径>     指定模板路径（默认：$HOME/.config/Code/projectTemplate/ModernCpp）
+  -h, --help                显示此帮助信息
+
+说明:
+  本工具将初始化一个基于 CMake + vcpkg + VS Code 的 C++ 项目：
+    - 复制模板文件
+    - 替换 "example" 为你的项目名
+    - 初始化 Git 和 vcpkg
+    - 打开 VS Code（如果已安装）
+
+示例:
+  new-cpp-project
+  new-cpp-project -n MyApp
+  new-cpp-project -n Engine -t ~/Templates/ModernCpp
+EOF
+}
+
+# 解析参数
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -n|--name)
+            PROJECT_NAME_RAW="$2"
+            shift 2
+            ;;
+        -t|--template)
+            TEMPLATE_PATH="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -*)
+            echo "❌ 未知参数: $1"
+            echo "请使用 --help 查看用法。"
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+#──────────────── 规范化项目名 ────────────────
+PROJECT_NAME=$(echo "$PROJECT_NAME_RAW" | tr '[:upper:]' '[:lower:]' | sed 's/[ _]/-/g; s/[^a-z0-9\\-]//g')
+
+if [[ "$PROJECT_NAME" != "$PROJECT_NAME_RAW" ]]; then
+    echo "⚠️ 项目名 [$PROJECT_NAME_RAW] 已规范化为 [$PROJECT_NAME] 以符合 vcpkg 要求。"
+fi
+
+#──────────────── 工具检查 ───────────────────
+check_tool() {
+    if ! command -v "$1" &>/dev/null; then
+        echo "⚠️ 未找到 $1，相关步骤将跳过。"
+        return 1
+    fi
+    return 0
+}
+
+HAS_GIT=0; check_tool git && HAS_GIT=1
+HAS_VCPKG=0; check_tool vcpkg && HAS_VCPKG=1
+HAS_CODE=0; check_tool code && HAS_CODE=1
+
+#──────────────── 复制模板 ───────────────────
+if [[ ! -d "$TEMPLATE_PATH" ]]; then
+    echo "❌ 模板路径 [$TEMPLATE_PATH] 不存在。"
+    exit 1
+fi
+
+shopt -s dotglob nullglob
+cp -r "$TEMPLATE_PATH/"* .
+shopt -u dotglob nullglob
+
+#──────────────── 替换占位符 ────────────────
+find . -type f \\( -name "*.cpp" -o -name "*.h" -o -name "*.txt" -o -name "*.cmake" -o -name "CMakeLists.txt" -o -name "vcpkg.json" -o -name "launch.json" -o -name "tasks.json" \\) | while read -r file; do
+    sed -i "s/\\bexample\\b/$PROJECT_NAME/g" "$file"
+done
+
+#──────────────── 重命名头文件 ──────────────
+OLD_HEADER="src/include/example.h"
+if [[ -f "$OLD_HEADER" ]]; then
+    NEW_LEAF="$PROJECT_NAME.h"
+    mv "$OLD_HEADER" "src/include/$NEW_LEAF"
+    sed -i "s/\\"example.h\\"/\\"$NEW_LEAF\\"/" src/source/main.cpp
+fi
+
+#──────────────── vcpkg new ──────────────────
+if [[ "$HAS_VCPKG" -eq 1 ]]; then
+    if [[ -f vcpkg.json ]]; then
+        echo "⚠️ 已存在 vcpkg.json，跳过 vcpkg new。"
+    else
+        echo "▶ 运行: vcpkg new --name=$PROJECT_NAME --version=0.1.0"
+        vcpkg new --name="$PROJECT_NAME" --version=0.1.0
+    fi
+fi
+
+#──────────────── Git 初始化 ────────────────
+if [[ "$HAS_GIT" -eq 1 ]]; then
+    if [[ ! -d .git ]]; then
+        git init
+    fi
+    git add . || true
+    git commit -m "Initialized $PROJECT_NAME project." || true
+fi
+
+#──────────────── 打开 VS Code ───────────────
+if [[ "$HAS_CODE" -eq 1 ]]; then
+    code src/source/main.cpp
+fi
+
+echo "✅ [$PROJECT_NAME] 初始化完成！"
+"""
 
 
 def detect_distro():
@@ -99,19 +232,19 @@ def check_toolchain():
         exit(1)
 
 
-def prompt_vcpkg_root():
+def prompt_vcpkg_root() -> Path:
     while True:
-        path = input("请输入 vcpkg 可执行文件所在目录（例如 ~/.local/opt/vcpkg/）: ").strip()
-        expanded = os.path.expanduser(path)
-        if Path(expanded).joinpath("vcpkg").exists():
+        path = input("请输入 vcpkg 可执行文件所在目录（例如 ~/.local/opt/vcpkg）: ").strip()
+        expanded = Path(path).expanduser()
+        if expanded.joinpath("vcpkg").exists():
             return expanded
         print("❌ 无法在指定目录找到 vcpkg 可执行文件。请重试。")
 
 
-def update_shell_configs(vcpkg_root: str):
+def update_shell_configs(vcpkg_root: Path):
     for shell, config in SHELL_CONFIGS.items():
         shell_block = config[1].format(vcpkg_root=vcpkg_root)
-        file_path = Path(os.path.expanduser(config[0]))
+        file_path = Path(config[0]).expanduser()
         if not file_path.exists():
             continue
         with open(file_path, "r", encoding="utf-8") as f:
@@ -187,21 +320,37 @@ def copy_template():
     HOME = os.environ['HOME']
     vscode_config_template_path = Path(f'{HOME}/.config/Code/projectTemplate')
     destination = vscode_config_template_path / 'ModernCpp'
-    if not os.path.exists(vscode_config_template_path):
-        os.makedirs(vscode_config_template_path)
-    if os.path.exists(destination):
+    if not vscode_config_template_path.exists():
+        vscode_config_template_path.mkdir(parents=True)
+    if destination.exists():
         shutil.rmtree(destination)
     shutil.copytree(Path('./projectTemplate/ModernCpp'), destination)
+
+
+def generate_init_script():
+    """生成项目初始化脚本 (命令)"""
+    user_bin_path = Path("~/.local/bin").expanduser()
+    if not user_bin_path.exists():
+        user_bin_path.mkdir(parents=True)
+    
+    cmd_path = user_bin_path / "new-cpp-project"
+    with open(cmd_path, "w", encoding="utf-8") as f:
+        f.write(NEW_CPP_PROJECT_CMD)
+    cmd_path.chmod(0o755)
         
     
-def main():
+def config_modern_cpp():
     check_toolchain()
     vcpkg_root = prompt_vcpkg_root()
+    print("\n🔧 配置 vcpkg...")
+    vcpkg_cmd = vcpkg_root / "vcpkg"
+    force_symlink(vcpkg_cmd, Path("~/.local/bin/vcpkg").expanduser())
+
     print("\n🔧 正在更新用户 shell 配置...")
     update_shell_configs(vcpkg_root)
     if is_installed("fish"):
-        force_symlink(Path(vcpkg_root) / "scripts/vcpkg_completion.fish", 
-                     os.path.expanduser("~/.config/fish/completions/vcpkg.fish"))
+        force_symlink(vcpkg_root / "scripts/vcpkg_completion.fish", 
+                     Path("~/.config/fish/completions/vcpkg.fish").expanduser())
 
     cmake_file_path = Path("./projectTemplate/ModernCpp/CMakeLists.txt")
     if cmake_file_path.exists():
@@ -209,7 +358,9 @@ def main():
         update_cmakelists(cmake_file_path, std)
         
     copy_template()
+    generate_init_script()
     print("\n✅ 恭喜，VSCode 配置已完成！")
 
+
 if __name__ == "__main__":
-    main()
+    config_modern_cpp()

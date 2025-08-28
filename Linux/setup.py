@@ -5,6 +5,8 @@ import termios
 from shutil import copytree, rmtree
 
 
+DEFAULT_ENV_PATH = "/home/dalao/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 def get_std_version():
     """获取用户指定的语言标准版本"""
     c_stds = {
@@ -62,7 +64,7 @@ def write_file(path: str, content: dict) -> None:
 
 
 def generate_config_file() -> bool:
-    Path = os.getenv('PATH').split(':')
+    Path = os.getenv('PATH', DEFAULT_ENV_PATH).split(':')
     compiler_path = None
     for p in Path:
         try:
@@ -193,20 +195,21 @@ def set_shell_config(fpath: str, shell: str="sh"):
         start, end = 0, 0
         if origin_content:
             for cnt, line in enumerate(origin_content):
-                if line.strip() == '##{{{ C/C++ project initialize':
+                if line.strip() == '# >>> C/C++ project initialize >>>':
                     start = cnt
-                if start != 0 and line.strip() == '##}}} End C/C++ project initialize':
+                if start != 0 and line.strip() == '# <<< C/C++ project initialize <<<':
                     end = cnt + 1
                     break
     global HOME
+    content = ''
     if shell == "sh":
-        content = '##{{{ C/C++ project initialize\n' \
+        content = '# >>> C/C++ project initialize >>>\n' \
                 + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.sh\n' \
-                + '##}}} End C/C++ project initialize'
+                + '# <<< C/C++ project initialize <<<'
     elif shell == "fish":
-        content = '##{{{ C/C++ project initialize\n' \
-            + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.fish\n' \
-            + '##}}} End C/C++ project initialize'
+        content = '# >>> C/C++ project initialize >>>\n' \
+                + f'source {HOME}/.config/Code/projectTemplate/init_vscode_project.fish\n' \
+                + '# <<< C/C++ project initialize <<<'
     with open(fpath, 'w', encoding='utf-8') as fw:
         if not origin_content:
             fw.write(content)
