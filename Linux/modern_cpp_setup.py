@@ -344,7 +344,10 @@ def config_modern_cpp():
     vcpkg_root = prompt_vcpkg_root()
     print("\n🔧 配置 vcpkg...")
     vcpkg_cmd = vcpkg_root / "vcpkg"
-    force_symlink(vcpkg_cmd, Path("~/.local/bin/vcpkg").expanduser())
+    dst_path = Path("~/.local/bin/vcpkg").expanduser()
+    if not dst_path.exists():
+        dst_path.mkdir(parents=True)
+    force_symlink(vcpkg_cmd, dst_path)
 
     print("\n🔧 正在更新用户 shell 配置...")
     update_shell_configs(vcpkg_root)

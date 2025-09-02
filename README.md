@@ -43,6 +43,9 @@ python setup.py
 ```bash
 cd Linux
 python setup.py
+
+# 如果需要 Modern Cpp，请执行下面的脚本进行配置
+python modern_cpp_setup.py
 ```
 
 #### Step 3. 初始化项目
