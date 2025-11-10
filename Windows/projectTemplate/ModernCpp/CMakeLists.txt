@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
 project(example LANGUAGES C CXX)
 
+# Set UTF-8 as default encoding (source and execution character sets)
+if (MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 # C++20 as default
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
