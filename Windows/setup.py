@@ -270,7 +270,7 @@ def set_modern_cpp_launch_json(ucrt64_bin_path: str):
 
     # add gcc path to environment PATH
     base_path_env = modern_cpp_launch_info['configurations'][1]['environment'][0]['value']
-    modern_cpp_launch_info['configurations'][1]['environment'][0]['value'] = f"{ucrt64_bin_path};{base_path_env}"
+    modern_cpp_launch_info['configurations'][1]['environment'][0]['value'] = f"{base_path_env};{ucrt64_bin_path}"
     # set miDebuggerPath for GDB config
     modern_cpp_launch_info['configurations'][1]['miDebuggerPath'] = os.path.join(ucrt64_bin_path, "gdb.exe")
 
