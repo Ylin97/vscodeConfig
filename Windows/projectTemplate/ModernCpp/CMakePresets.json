@@ -12,9 +12,6 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "installDir": "${sourceDir}/install/${presetName}",
-            "environment": {
-                "PATH": "D:/msys64/ucrt64/bin;$penv{PATH}"
-            },
             "cacheVariables": {
                 "CMAKE_MAKE_PROGRAM": "D:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -28,6 +25,9 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "installDir": "${sourceDir}/install/${presetName}",
+            "environment": {
+                "PATH": "D:/msys64/ucrt64/bin;$penv{PATH}"
+            },
             "cacheVariables": {
                 "CMAKE_MAKE_PROGRAM": "D:/msys64/ucrt64/bin/ninja.exe",
                 "CMAKE_C_COMPILER": "D:/msys64/ucrt64/bin/gcc.exe",
