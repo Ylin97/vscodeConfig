@@ -15,7 +15,7 @@
       "environment": [
         {
           "name": "PATH",
-          "value": "${env:PATH};${command:cmake.getLaunchTargetDirectory}"
+          "value": "${command:cmake.getLaunchTargetDirectory};${env:PATH}"
         }
       ],
       // 使用 VSCode 的集成终端
@@ -36,7 +36,7 @@
       "environment": [
         {
           "name": "PATH",
-          "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+          "value": "D:/msys64/ucrt64/bin;${command:cmake.getLaunchTargetDirectory};${env:PATH}"
         }
       ],
       "externalConsole": false, // 使用系统终端可避免字符集或输入问题
