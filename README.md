@@ -95,34 +95,9 @@ python modern_cpp_setup.py
 - `gcc`, `g++`, `gdb`, `cmake`, `ninja`（通过包管理器安装）
 - `vcpkg`（同上）
 
-#### Step 3. 配置 CMakePresets.json
+#### Step 3. 配置 CMakePresets.json 和 launch.json
 
-根据工具链修改以下路径：
-
-```jsonc
-{
-  "configurePresets": [
-    {
-      "name": "msvc-vs",
-      "cacheVariables": {
-        "CMAKE_MAKE_PROGRAM": "你的Ninja路径/ninja.exe",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      }
-    },
-    {
-      "name": "ucrt64",
-      "cacheVariables": {
-        "CMAKE_MAKE_PROGRAM": "MSYS2 Ninja路径/ninja.exe",
-        "CMAKE_C_COMPILER": "MSYS2 gcc路径/gcc.exe",
-        "CMAKE_CXX_COMPILER": "MSYS2 g++路径/g++.exe",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      }
-    }
-  ]
-}
-```
-
-> **注意**：如果使用 `VCPKG_ROOT` 环境变量，请确保手动将 `vcpkg` 安装目录添加到系统环境变量，否则请直接写绝对路径。
+安装程序会尝试自动查找编译器路径，如果没有找到，则请根据提示依次输入 `gcc` 编译器路径和 `cl` 路径。具体配置示例请参考：[modern cpp 配置示例](./Modern Cpp 配置示例.md)。
 
 #### Step 4. 初始化项目
 
@@ -130,7 +105,16 @@ python modern_cpp_setup.py
 new-cpp-project
 ```
 
-> **注意**：如果使用 MSVC 构建工具，则需要通过开始菜单中的 `Developer PowerShell for VS 2022`、`Developer Command Prompt for VS 2022` 或 ` x64_x86 Cross Tools Command Prompt for VS 2022` 等启动项来启动控制台，然后再在控制台中通过命令`code <项目目录>`来打开项目，否则 vscode 可能无法正确识别 MSVC 开发所需的环境变量。
+> **注意事项**：
+>
+> 1. 如果使用 MSVC 构建工具，则需要通过开始菜单中的 `Developer PowerShell for VS 2022`、`Developer Command Prompt for VS 2022` 或 ` x64_x86 Cross Tools Command Prompt for VS 2022` 等启动项来启动控制台，然后再在控制台中通过命令`code <项目目录>`来打开项目，否则 vscode 可能无法正确识别 MSVC 开发所需的环境变量。
+>
+> 2. 如果 git 初次提交没有成功，那很可能是 git 本身没有配置好，请检查 `git config list` 输出结果中是否有 `user.name` 和 `user.email`，如果没有请按下面的命令设置：
+>
+>    ```shell
+>    $ git config --global user.name "John Doe"
+>    $ git config --global user.email johndoe@example.com
+>    ```
 
 初始化后，项目结构如下：
 
