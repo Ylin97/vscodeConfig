@@ -47,7 +47,8 @@
       "environment": [
         {
           "name": "PATH",
-          "value": "D:/msys64/ucrt64/bin;${command:cmake.getLaunchTargetDirectory};${env:PATH}"
+          // msys64的bin目录必须放在 ${env:PATH} 之后，否则会导致无法启动调试器
+          "value": "${command:cmake.getLaunchTargetDirectory};${env:PATH};D:/msys64/ucrt64/bin"
         }
       ],
       "externalConsole": false, // 使用系统终端可避免字符集或输入问题
