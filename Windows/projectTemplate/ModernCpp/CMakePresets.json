@@ -8,6 +8,7 @@
     "configurePresets": [
         {
             "name": "msvc-vs",
+            "hidden": true,
             "displayName": "MSVC + VS Ninja (base)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -21,6 +22,7 @@
         },
         {
             "name": "ucrt64",
+            "hidden": true,
             "displayName": "MinGW-w64 UCRT64 + MSYS2 Ninja (base)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",

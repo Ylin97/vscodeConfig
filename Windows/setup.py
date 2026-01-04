@@ -591,6 +591,7 @@ if __name__ == '__main__':
         "configurePresets": [
             {
             "name": "msvc-vs",
+            "hidden": True,
             "displayName": "MSVC + VS Ninja (base)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -604,6 +605,7 @@ if __name__ == '__main__':
             },
             {
             "name": "ucrt64",
+            "hidden": True,
             "displayName": "MinGW-w64 UCRT64 + MSYS2 Ninja (base)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
