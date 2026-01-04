@@ -3,6 +3,7 @@ import sys
 import json
 import msvcrt
 from shutil import copytree, rmtree
+from pathlib import Path
 
 
 def get_std_version():
@@ -49,40 +50,42 @@ def get_std_version():
         break
 
 
-def read_file(path: str) -> dict:
+def read_file(path: Path | str) -> dict:
     with open(path, 'r', encoding='utf-8') as fr:
         config = json.loads(fr.read().replace("\'", "\""))
     return config
 
 
-def write_file(path: str, content: dict) -> None:
+def write_file(path: Path | str, content: dict) -> None:
     with open(path, 'w', encoding='utf-8') as fw:
         json.dump(content, fw, ensure_ascii=False, indent=4)
 
 
 def generate_config_file() -> bool:
-    Path = os.getenv('Path').split(';')
-    compiler_path = None
-    for p in Path:
-        try:
-            if 'gcc.exe' in os.listdir(p):
-                compiler_path = p
-                break
-        except Exception:
-            continue
-    if not compiler_path:
-        print("警告!!!未找到GCC编译器, 请确保您已经安装GCC编译器, 并已将其添加到'Path'环境变量中!")
-        return False
-
+    """生成配置文件"""
+    # request tools path
+    ucrt64_bin_path = request_exec_path('gcc', 'D:\\msys64\\ucrt64\\bin')
+    msvc_path = request_exec_path('cl', 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.35.32215\\bin\\Hostx64\\x64')
+    
+    # set c/cpp settings.json
     set_settings_json()
+
     # set c config files
-    set_c_cpp_properties_json(compiler_path, 'c')
-    set_tasks_json(compiler_path, 'c')
-    set_launch_json(compiler_path, 'c')
+    set_c_cpp_properties_json(ucrt64_bin_path, 'c')
+    set_tasks_json(ucrt64_bin_path, 'c')
+    set_launch_json(ucrt64_bin_path, 'c')
+
     # set cpp config files
-    set_c_cpp_properties_json(compiler_path, 'cpp')
-    set_tasks_json(compiler_path, 'cpp')
-    set_launch_json(compiler_path, 'cpp')
+    set_c_cpp_properties_json(ucrt64_bin_path, 'cpp')
+    set_tasks_json(ucrt64_bin_path, 'cpp')
+    set_launch_json(ucrt64_bin_path, 'cpp')
+
+    # set modern_cpp config files
+    set_modern_cpp_settings_json()
+    set_modern_cpp_tasks_json()
+    set_modern_cpp_launch_json(ucrt64_bin_path)
+    set_modern_cpp_cmake_presets_json(msvc_path, ucrt64_bin_path)
+
     return True
 
 
@@ -196,10 +199,11 @@ def set_profile():
     for profile_path in profile_paths:
         destination = os.path.join(profile_path, 'profile.ps1')
         # destination = 'profile.ps1'
+        origin_content = None
+        start, end = 0, 0
         if os.path.exists(destination):
             with open(destination, 'r', encoding='utf-8') as fr:
                 origin_content = fr.readlines()
-                start, end = 0, 0
                 for cnt, line in enumerate(origin_content):
                     if line.strip() == '#region project initialize':
                         start = cnt
@@ -208,7 +212,7 @@ def set_profile():
                         break
         else:
             os.makedirs(profile_path)
-            origin_content = None
+            
         with open(destination, 'w', encoding='utf-8') as fw:
             if not origin_content:
                 fw.write(content)
@@ -232,6 +236,69 @@ def set_profile():
                 if origin_content[-1][-1] != '\n':
                     fw.write('\n')
                 fw.write(content)
+
+
+def check_vcpkg_environment_variable() -> bool:
+    """检查 vcpkg 环境变量是否存在"""
+    vcpkg_root = os.getenv('VCPKG_ROOT', None)
+    if not vcpkg_root or not os.path.exists(vcpkg_root):
+        print("错误!!! 请先设置 vcpkg 的环境变量 VCPKG_ROOT 指向 vcpkg 安装目录...")
+        return False
+    else:
+        print(f"VCPKG_ROOT = {vcpkg_root}")
+    return True
+
+
+def set_modern_cpp_settings_json():
+    """设置 modern_cpp 下的 settings.json"""
+    global modern_cpp_settings_info
+    global modern_cpp_path
+    write_file(os.path.join(modern_cpp_path, 'settings.json'), modern_cpp_settings_info)
+
+
+def set_modern_cpp_tasks_json():
+    """设置 modern_cpp 下的 tasks.json"""
+    global modern_cpp__tasks_info
+    global modern_cpp_path
+    write_file(os.path.join(modern_cpp_path, 'tasks.json'), modern_cpp__tasks_info)
+
+
+def set_modern_cpp_launch_json(ucrt64_bin_path: str):
+    """设置 modern_cpp 下的 launch.json"""
+    global modern_cpp_launch_info
+    global modern_cpp_path
+
+    # add gcc path to environment PATH
+    base_path_env = modern_cpp_launch_info['configurations'][1]['environment'][0]['value']
+    modern_cpp_launch_info['configurations'][1]['environment'][0]['value'] = f"{ucrt64_bin_path};${base_path_env}"
+    # set miDebuggerPath for GDB config
+    modern_cpp_launch_info['configurations'][1]['miDebuggerPath'] = os.path.join(ucrt64_bin_path, "gdb.exe")
+
+    write_file(os.path.join(modern_cpp_path, 'launch.json'), modern_cpp_launch_info)
+
+def set_modern_cpp_cmake_presets_json(cl_path: str, ucrt64_bin_path: str):
+    """设置 modern_cpp 下的 CMakePresets.json"""
+    global modern_cpp_cmake_presets
+    global modern_cpp_path
+
+    # set msvc configurations
+    pos = cl_path.find("Community")
+    community_path = cl_path[0:pos + len("Community")]
+
+    msvc_ninja_path = os.path.join(community_path, "Common7", "IDE", "CommonExtensions", "Microsoft", "CMake", "Ninja")
+    modern_cpp_cmake_presets['configurePresets'][0]['cacheVariables']['CMAKE_MAKE_PROGRAM'] = os.path.join(msvc_ninja_path, "ninja.exe")
+
+    # set ucrt64 configurations
+    ninja_path = ucrt64_bin_path
+    if "ninja.exe" not in os.listdir(ucrt64_bin_path):
+        ninja_path = request_exec_path('ninja', 'D:\\msys64\\ucrt64\\bin')
+
+    modern_cpp_cmake_presets['configurePresets'][1]['environment']['PATH'] = f"{ucrt64_bin_path};$penv{{PATH}}"
+    modern_cpp_cmake_presets['configurePresets'][1]['cacheVariables']['CMAKE_MAKE_PROGRAM'] = os.path.join(ninja_path, "ninja.exe")
+    modern_cpp_cmake_presets['configurePresets'][1]['cacheVariables']['CMAKE_C_COMPILER'] = os.path.join(ucrt64_bin_path, "gcc.exe")
+    modern_cpp_cmake_presets['configurePresets'][1]['cacheVariables']['CMAKE_CXX_COMPILER'] = os.path.join(ucrt64_bin_path, "g++.exe")
+
+    write_file(Path(modern_cpp_path).parent / 'CMakePresets.json', modern_cpp_cmake_presets)
 
 
 def generate_template():
@@ -268,10 +335,21 @@ def main():
     print("Visual Studio Code c/c++多文件设置:\n")
     global c_path
     global cpp_path
+
+    if not check_vcpkg_environment_variable():
+        print("\n配置未完成, 请按任意键退出...")
+        ord(msvcrt.getch())
+        return -1
+    else:
+        print("vcpkg 环境变量检查通过...\n")
+
     if not os.path.exists(c_path):
         os.mkdir(c_path)
     if not os.path.exists(cpp_path):
         os.mkdir(cpp_path)
+    if not os.path.exists(modern_cpp_path):
+        os.mkdir(modern_cpp_path)
+
     get_std_version()
     if generate_config_file():
         generate_template()
@@ -282,6 +360,34 @@ def main():
         print("\n配置未完成, 请按任意键退出...")
 
     ord(msvcrt.getch())
+
+
+def get_input(prompt: str) -> str:
+    """获取用户输入"""
+    return input(prompt).strip()
+
+
+def request_exec_path(name: str, example: str) -> str:
+    """请求用户输入编译器路径"""
+    exec_name = f'{name.lower()}.exe'
+    Path = os.getenv('Path', '').split(';')
+    exec_path = None
+    for p in Path:
+        try:
+            if exec_name in os.listdir(p):
+                exec_path = p
+                break
+        except Exception:
+            continue
+
+    if not exec_path:
+        while True:
+            path = get_input(f"请输入 {name} 可执行文件所在路径(例如 {example}): ")
+            if os.path.exists(path) and exec_name in os.listdir(path):
+                exec_path = path
+                break
+            print(f"错误!!!请输入正确 {name} 可执行文件的路径...\n")
+    return exec_path
 
 
 if __name__ == '__main__':
@@ -376,9 +482,199 @@ if __name__ == '__main__':
         }
     }
 
+    #=======================================================
+    #         Modern Cpp Project Configurations
+    #=======================================================
+
+    modern_cpp_settings_info = {
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    }
+
+    modern_cpp__tasks_info = {
+        "version": "2.0.0",
+        "tasks": [
+            {
+            "label": "build-msvc-debug",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/msvc-vs-debug",
+                "--target",
+                "example"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": True
+            }
+            },
+            {
+            "label": "build-ucrt64-debug",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/ucrt64-debug",
+                "--target",
+                "example"
+            ],
+            "problemMatcher": [],
+            "group": "build"
+            }
+        ]
+    }
+
+    modern_cpp_launch_info = {
+    "version": "0.2.0",
+    "configurations": [
+            {
+            # MSVC 原生调试器，无需配置 GDB/MI
+            "name": "Debug with MSVC",
+            "type": "cppvsdbg",
+            "request": "launch",
+            # CMake Tools 会解析为当前 launch target 的输出全路径
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": False,
+            # 把工作目录设置为可执行文件所在目录，方便 DLL 加载等
+            "cwd": "${command:cmake.getLaunchTargetDirectory}",
+            "environment": [
+                {
+                "name": "PATH",
+                "value": "${command:cmake.getLaunchTargetDirectory};${env:PATH}"
+                }
+            ],
+            # 使用 VSCode 的集成终端
+            "console": "integratedTerminal",
+            # 若你希望使用外部终端，可以改为:
+            # "console": "externalTerminal",
+            "preLaunchTask": "build-msvc-debug"
+            },
+            {
+            # GDB (MinGW-w64 / MSYS2 UCRT64) 使用 MI 协议，需要指定调试器
+            "name": "Debug with GDB",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": False,
+            "cwd": "${command:cmake.getLaunchTargetDirectory}",
+            "environment": [
+                {
+                "name": "PATH",
+                "value": "${command:cmake.getLaunchTargetDirectory};${env:PATH}"
+                }
+            ],
+            "externalConsole": False, # 使用系统终端可避免字符集或输入问题
+            "MIMode": "gdb", # 指定 MI 模式为 gdb
+            "miDebuggerPath": "D:/msys64/ucrt64/bin/gdb.exe", # GDB 可执行路径
+            "setupCommands": [ # GDB 启动时的初始化命令
+                {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": True
+                }
+            ], 
+            "preLaunchTask": "build-ucrt64-debug"
+            }
+        ]
+    }
+
+    modern_cpp_cmake_presets = {
+        "version": 8,
+        "cmakeMinimumRequired": {
+            "major": 3,
+            "minor": 23,
+            "patch": 0
+        },
+        "configurePresets": [
+            {
+            "name": "msvc-vs",
+            "displayName": "MSVC + VS Ninja (base)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_MAKE_PROGRAM": "D:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "VCPKG_MANIFEST_MODE": "ON"
+            }
+            },
+            {
+            "name": "ucrt64",
+            "displayName": "MinGW-w64 UCRT64 + MSYS2 Ninja (base)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/install/${presetName}",
+            "environment": {
+                "PATH": "D:\\msys64\\ucrt64\\bin;$penv{PATH}"
+            },
+            "cacheVariables": {
+                "CMAKE_MAKE_PROGRAM": "D:/msys64/ucrt64/bin/ninja.exe",
+                "CMAKE_C_COMPILER": "D:/msys64/ucrt64/bin/gcc.exe",
+                "CMAKE_CXX_COMPILER": "D:/msys64/ucrt64/bin/g++.exe",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_MANIFEST_MODE": "ON"
+            }
+            },
+
+            {
+            "name": "msvc-vs-debug",
+            "inherits": "msvc-vs",
+            "displayName": "MSVC Debug",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            },
+            {
+            "name": "msvc-vs-release",
+            "inherits": "msvc-vs",
+            "displayName": "MSVC Release",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+            },
+            {
+            "name": "msvc-vs-minsizerel",
+            "inherits": "msvc-vs",
+            "displayName": "MSVC MinSizeRel",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "MinSizeRel" }
+            },
+
+            {
+            "name": "ucrt64-debug",
+            "inherits": "ucrt64",
+            "displayName": "UCRT64 Debug",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            },
+            {
+            "name": "ucrt64-release",
+            "inherits": "ucrt64",
+            "displayName": "UCRT64 Release",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+            },
+            {
+            "name": "ucrt64-minsizerel",
+            "inherits": "ucrt64",
+            "displayName": "UCRT64 MinSizeRel",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "MinSizeRel" }
+            }
+        ],
+
+        "buildPresets": [
+            { "name": "build-msvc-debug",        "configurePreset": "msvc-vs-debug" },
+            { "name": "build-msvc-release",      "configurePreset": "msvc-vs-release" },
+            { "name": "build-msvc-minsizerel",   "configurePreset": "msvc-vs-minsizerel" },
+
+            { "name": "build-ucrt64-debug",      "configurePreset": "ucrt64-debug" },
+            { "name": "build-ucrt64-release",    "configurePreset": "ucrt64-release" },
+            { "name": "build-ucrt64-minsizerel", "configurePreset": "ucrt64-minsizerel" }
+        ]
+    }
+
     default_c_std = "c17"  # 默认c标准
     default_cpp_std = "c++11"  # 默认c++标准
     c_path = 'projectTemplate\\c\\.vscode'
     cpp_path = 'projectTemplate\\cpp\\.vscode'
+    modern_cpp_path = 'projectTemplate\\ModernCpp\\.vscode'
 
     sys.exit(main())
