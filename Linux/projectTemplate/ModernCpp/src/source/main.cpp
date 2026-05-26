@@ -11,7 +11,6 @@ void hello() {
     //char* dt = ctime(&now);
     //fmt::print("Time: {}", dt);
     std::cout << "Hello, world!" << std::endl;
-    
 }
 
 int main() {
