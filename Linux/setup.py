@@ -4,7 +4,7 @@ import sys
 import termios
 from shutil import copytree, rmtree
 
-from .modern_cpp_setup import config_modern_cpp
+from modern_cpp_setup import config_modern_cpp
 
 
 DEFAULT_ENV_PATH = "/home/dalao/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
