@@ -4,6 +4,8 @@ import sys
 import termios
 from shutil import copytree, rmtree
 
+from .modern_cpp_setup import config_modern_cpp
+
 
 DEFAULT_ENV_PATH = "/home/dalao/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
@@ -311,6 +313,12 @@ def main():
 
         if os.path.exists(fishconfig_path):
             set_shell_config(fishconfig_path, "fish")
+
+        # 配置 modern cpp
+        need_modern_cpp = input("是否需要配置 modern_cpp? [Y/N]: ").lower()
+        if need_modern_cpp[0] == 'y':
+            config_modern_cpp()
+
         press_any_key_exit("配置已完成, 请按任意键退出...")
     else:
         press_any_key_exit("\n配置未完成, 请按任意键退出...")

@@ -29,6 +29,9 @@ fi
 # vcpkg
 export VCPKG_ROOT=\"{vcpkg_root}\"
 source $VCPKG_ROOT/scripts/vcpkg_completion.bash
+
+# update vcpkg
+alias update-vcpkg="git -C $VCPKG_ROOT pull"
 # <<< modern cpp initialize <<<
 """
 
@@ -42,6 +45,9 @@ export VCPKG_ROOT=\"{vcpkg_root}\"
 autoload bashcompinit
 bashcompinit
 source $VCPKG_ROOT/scripts/vcpkg_completion.zsh
+
+# update vcpkg
+alias update-vcpkg="git -C $VCPKG_ROOT pull"
 # <<< modern cpp initialize <<<
 """
 
@@ -52,6 +58,9 @@ end
 
 # vcpkg
 set -gx VCPKG_ROOT \"{vcpkg_root}\"
+
+# update vcpkg
+abbr --add update-vcpkg "git -C $VCPKG_ROOT pull"
 # <<< modern cpp initialize <<<
 """
 
@@ -234,11 +243,13 @@ def check_toolchain():
 
 def prompt_vcpkg_root() -> Path:
     while True:
-        path = input("请输入 vcpkg 可执行文件所在目录（例如 ~/.local/opt/vcpkg）: ").strip()
+        path = input("请输入克隆的 vcpkg 仓库路径（例如 ~/.local/share/vcpkg）: ").strip()
         expanded = Path(path).expanduser()
         if expanded.joinpath("vcpkg").exists():
             return expanded
-        print("❌ 无法在指定目录找到 vcpkg 可执行文件。请重试。")
+        print("❌ 无法在指定目录找到 vcpkg 可执行文件。请按下面的方式进行配置:")
+        print("\t方式一: 通过系统包管理器安装 vcpkg，然后在 vcpkg 仓库目录中创建软连接，例如 ln -s /usr/bin/vcpkg ~/.local/share/vcpkg/")
+        print("\t方式二: 通过 vcpkg 本地仓库中的安装脚本 bootstrap-vcpkg.sh 进行安装，即执行 sh ./bootstrap-vcpkg.sh")
 
 
 def update_shell_configs(vcpkg_root: Path):

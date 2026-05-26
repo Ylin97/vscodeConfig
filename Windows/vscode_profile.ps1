@@ -233,4 +233,23 @@ function New-Cpp-Project {
 
     Write-Host "✅ [$ProjectName] 初始化完成！" -ForegroundColor Green
 }
+
+function update-vcpkg {
+    <#
+    .SYNOPSIS
+    更新 vcpkg recipes。
+
+    .DESCRIPTION
+    更新 vcpkg recipes。
+
+    .EXAMPLE
+    PS> update-vcpkg
+
+    更新 vcpkg recipes。
+
+    .NOTES
+    vcpkg 默认安装在 $env:VCPKG_ROOT。
+    #>
+    git -C $env:VCPKG_ROOT pull
+}
 #endregion
